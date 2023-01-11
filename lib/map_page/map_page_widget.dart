@@ -278,52 +278,56 @@ class _MapPageWidgetState extends State<MapPageWidget> {
                                                         .primaryBackground,
                                                 size: 20,
                                               ),
-                                              onPressed: () async {
-                                                var confirmDialogResponse =
-                                                    await showDialog<bool>(
-                                                          context: context,
-                                                          builder:
-                                                              (alertDialogContext) {
-                                                            return AlertDialog(
-                                                              title: Text(
-                                                                  'Annuler le dernier checkpoint'),
-                                                              content: Text(
-                                                                  'Êtes-vous sûrs de vouloir annuler le dernier checkpoint ?'),
-                                                              actions: [
-                                                                TextButton(
-                                                                  onPressed: () =>
-                                                                      Navigator.pop(
-                                                                          alertDialogContext,
-                                                                          false),
-                                                                  child: Text(
-                                                                      'Annuler'),
-                                                                ),
-                                                                TextButton(
-                                                                  onPressed: () =>
-                                                                      Navigator.pop(
-                                                                          alertDialogContext,
-                                                                          true),
-                                                                  child: Text(
-                                                                      'Confirmer'),
-                                                                ),
-                                                              ],
-                                                            );
-                                                          },
-                                                        ) ??
-                                                        false;
-                                                if (confirmDialogResponse) {
-                                                  final registrationsUpdateData =
-                                                      {
-                                                    'current_checkpoint':
-                                                        FieldValue.increment(
-                                                            -(1)),
-                                                  };
-                                                  await mapPageRegistrationsRecord!
-                                                      .reference
-                                                      .update(
-                                                          registrationsUpdateData);
-                                                }
-                                              },
+                                              onPressed:
+                                                  mapPageRegistrationsRecord!
+                                                              .currentCheckpoint ==
+                                                          -1
+                                                      ? null
+                                                      : () async {
+                                                          var confirmDialogResponse =
+                                                              await showDialog<
+                                                                      bool>(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (alertDialogContext) {
+                                                                      return AlertDialog(
+                                                                        title: Text(
+                                                                            'Annuler le dernier checkpoint'),
+                                                                        content:
+                                                                            Text('Êtes-vous sûrs de vouloir annuler le dernier checkpoint ?'),
+                                                                        actions: [
+                                                                          TextButton(
+                                                                            onPressed: () =>
+                                                                                Navigator.pop(alertDialogContext, false),
+                                                                            child:
+                                                                                Text('Annuler'),
+                                                                          ),
+                                                                          TextButton(
+                                                                            onPressed: () =>
+                                                                                Navigator.pop(alertDialogContext, true),
+                                                                            child:
+                                                                                Text('Confirmer'),
+                                                                          ),
+                                                                        ],
+                                                                      );
+                                                                    },
+                                                                  ) ??
+                                                                  false;
+                                                          if (confirmDialogResponse) {
+                                                            final registrationsUpdateData =
+                                                                {
+                                                              'current_checkpoint':
+                                                                  FieldValue
+                                                                      .increment(
+                                                                          -(1)),
+                                                            };
+                                                            await mapPageRegistrationsRecord!
+                                                                .reference
+                                                                .update(
+                                                                    registrationsUpdateData);
+                                                          }
+                                                        },
                                             ),
                                           ],
                                         ),
