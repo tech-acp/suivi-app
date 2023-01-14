@@ -15,14 +15,10 @@ abstract class RegistrationsRecord
 
   String? get id;
 
-  String? get status;
-
   @BuiltValueField(wireName: 'current_checkpoint')
   int? get currentCheckpoint;
 
   String? get category;
-
-  bool? get started;
 
   @BuiltValueField(wireName: 'start_time')
   DateTime? get startTime;
@@ -30,16 +26,23 @@ abstract class RegistrationsRecord
   @BuiltValueField(wireName: 'limit_time')
   DateTime? get limitTime;
 
+  @BuiltValueField(wireName: 'end_time')
+  DateTime? get endTime;
+
+  String? get type;
+
+  int? get status;
+
   @BuiltValueField(wireName: kDocumentReferenceField)
   DocumentReference? get ffRef;
   DocumentReference get reference => ffRef!;
 
   static void _initializeBuilder(RegistrationsRecordBuilder builder) => builder
     ..id = ''
-    ..status = ''
     ..currentCheckpoint = 0
     ..category = ''
-    ..started = false;
+    ..type = ''
+    ..status = 0;
 
   static CollectionReference get collection =>
       FirebaseFirestore.instance.collection('registrations');
@@ -66,12 +69,13 @@ abstract class RegistrationsRecord
 Map<String, dynamic> createRegistrationsRecordData({
   DocumentReference? event,
   String? id,
-  String? status,
   int? currentCheckpoint,
   String? category,
-  bool? started,
   DateTime? startTime,
   DateTime? limitTime,
+  DateTime? endTime,
+  String? type,
+  int? status,
 }) {
   final firestoreData = serializers.toFirestore(
     RegistrationsRecord.serializer,
@@ -79,12 +83,13 @@ Map<String, dynamic> createRegistrationsRecordData({
       (r) => r
         ..event = event
         ..id = id
-        ..status = status
         ..currentCheckpoint = currentCheckpoint
         ..category = category
-        ..started = started
         ..startTime = startTime
-        ..limitTime = limitTime,
+        ..limitTime = limitTime
+        ..endTime = endTime
+        ..type = type
+        ..status = status,
     ),
   );
 

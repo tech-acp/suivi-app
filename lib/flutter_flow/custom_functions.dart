@@ -9,6 +9,7 @@ import 'lat_lng.dart';
 import 'place.dart';
 import '../backend/backend.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../backend/supabase/supabase.dart';
 
 bool validateStep(
   LatLng currentLocation,
@@ -64,24 +65,31 @@ int getFinishStep(List<CheckpointStruct> checkpoints) {
 }
 
 bool validateNextCheckpoint(
+  RegistrationsRecord registration,
+  EventsRecord event,
   LatLng currentLocation,
-  int currentCheckpoint,
-  List<CheckpointStruct> checkpoints,
 ) {
-  if (currentCheckpoint == -2) {
-    return false;
-  } else {
-    CheckpointStruct nextCheckpoint = checkpoints[currentCheckpoint + 1];
+  CheckpointStruct nextCheckpoint;
 
-    return validateStep(currentLocation, nextCheckpoint.location!);
+  if (registration.currentCheckpoint == -2) {
+    return false;
+  } else if (registration.currentCheckpoint ==
+      (event.checkpoints!.length - 1)) {
+    nextCheckpoint = event.finish;
+  } else {
+    nextCheckpoint = event.checkpoints![registration.currentCheckpoint! + 1];
   }
+
+  return validateStep(currentLocation, nextCheckpoint.location!);
 }
 
 CheckpointStruct getNextCheckpoint(
-  int currentCheckpoint,
-  List<CheckpointStruct> checkpoints,
+  RegistrationsRecord registration,
+  EventsRecord event,
 ) {
-  return checkpoints[currentCheckpoint + 1];
+  return registration.currentCheckpoint == (event.checkpoints!.length - 1)
+      ? event.finish
+      : event.checkpoints![registration.currentCheckpoint! + 1];
 }
 
 int getDistanceBetweenCheckpoints(
@@ -105,9 +113,39 @@ int getDistanceBetweenCheckpoints(
 }
 
 DateTime getLimitTime(
-  String category,
+  EventsRecord event,
+  RegistrationsRecord registration,
+  DateTime currentTime,
+) {
+  int duration = (event.type == 'FF')
+      ? getFlecheDurationInMinutes(event.distance!, registration.category!)
+      : getBrevetDurationInMinutes(event.distance!);
+
+  return currentTime.add(Duration(minutes: duration));
+}
+
+String getRemainingTime(DateTime limitTime) {
+  // get the numbers of hours and minutes from now to the given limitTime
+  Duration timeLeft = limitTime.difference(DateTime.now());
+  int hh = timeLeft.inHours as int;
+  int mm = (timeLeft.inMinutes % 60) as int;
+  int ss = (timeLeft.inSeconds % 60) as int;
+  //todo change to actual hours and minutes and seconds instead of * 100;
+
+  return "${hh}h ${mm}min";
+}
+
+List<CheckpointStruct> removeCheckpoint(
+  CheckpointStruct checkpointToRemove,
+  List<CheckpointStruct> initialCheckpoints,
+) {
+  initialCheckpoints.remove(checkpointToRemove);
+  return initialCheckpoints;
+}
+
+int getFlecheDurationInMinutes(
   int distance,
-  DateTime startTime,
+  String category,
 ) {
   int averageSpeed;
 
@@ -127,16 +165,37 @@ DateTime getLimitTime(
 
   double time = distance / averageSpeed;
 
-  return startTime.add(Duration(minutes: (time * 60).toInt()));
+  return (time * 60).toInt();
 }
 
-String getRemainingTime(DateTime limitTime) {
-  // get the numbers of hours and minutes from now to the given limitTime
-  Duration timeLeft = limitTime.difference(DateTime.now());
-  int hh = timeLeft.inHours as int;
-  int mm = (timeLeft.inMinutes % 60) as int;
-  int ss = (timeLeft.inSeconds % 60) as int;
-  //todo change to actual hours and minutes and seconds instead of * 100;
+int getBrevetDurationInMinutes(int distance) {
+  if (distance == 200) {
+    return (13 * 60) + 30;
+  } else if (distance == 300) {
+    return (20 * 60);
+  } else if (distance == 400) {
+    return (27 * 60);
+  } else if (distance == 600) {
+    return (40 * 60);
+  } else {
+    return (75 * 60);
+  }
+}
 
+String getTotalTime(RegistrationsRecord registration) {
+  Duration totalTime =
+      registration.endTime!.difference(registration.startTime!);
+  int hh = totalTime.inHours as int;
+  int mm = (totalTime.inMinutes % 60) as int;
   return "${hh}h ${mm}min";
+}
+
+int getAverageSpeed(
+  RegistrationsRecord registration,
+  EventsRecord event,
+) {
+  Duration totalTime =
+      registration.endTime!.difference(registration.startTime!);
+
+  return (event.distance! / (totalTime.inMinutes / 60)).round();
 }

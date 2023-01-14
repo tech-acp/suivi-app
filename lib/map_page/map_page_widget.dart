@@ -8,6 +8,7 @@ import '../flutter_flow/custom_functions.dart' as functions;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 class MapPageWidget extends StatefulWidget {
@@ -22,7 +23,8 @@ class MapPageWidget extends StatefulWidget {
   _MapPageWidgetState createState() => _MapPageWidgetState();
 }
 
-class _MapPageWidgetState extends State<MapPageWidget> {
+class _MapPageWidgetState extends State<MapPageWidget>
+    with TickerProviderStateMixin {
   LatLng? currentUserLocationValue;
   final _unfocusNode = FocusNode();
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -58,7 +60,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         ),
       );
     }
-
+    final fireWorksController = AnimationController(vsync: this);
     return StreamBuilder<List<RegistrationsRecord>>(
       stream: queryRegistrationsRecord(
         queryBuilder: (registrationsRecord) =>
@@ -125,420 +127,712 @@ class _MapPageWidgetState extends State<MapPageWidget> {
                                   width: MediaQuery.of(context).size.width,
                                   height:
                                       MediaQuery.of(context).size.height * 1,
-                                  child: custom_widgets.CustomMap(
+                                  child: custom_widgets.SuiviMap(
                                     width: MediaQuery.of(context).size.width,
                                     height:
                                         MediaQuery.of(context).size.height * 1,
-                                    startLocation:
-                                        columnEventsRecord.start.location!,
-                                    finishLocation:
-                                        columnEventsRecord.finish.location!,
-                                    checkpoints: columnEventsRecord.checkpoints!
-                                        .toList(),
                                     registration: mapPageRegistrationsRecord!,
                                     currentUserLocation:
                                         currentUserLocationValue,
+                                    event: columnEventsRecord,
                                   ),
                                 ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      3, 0, 0, 50),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0, 20, 0, 0),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            if (!mapPageRegistrationsRecord!
-                                                .started!)
-                                              Align(
-                                                alignment:
-                                                    AlignmentDirectional(0, -1),
-                                                child: FFButtonWidget(
-                                                  onPressed: !functions
-                                                          .validateNextCheckpoint(
-                                                              currentUserLocationValue!,
-                                                              mapPageRegistrationsRecord!
-                                                                  .currentCheckpoint!,
-                                                              columnEventsRecord
-                                                                  .checkpoints!
-                                                                  .toList())
-                                                      ? null
-                                                      : () async {
-                                                          final registrationsUpdateData =
-                                                              createRegistrationsRecordData(
-                                                            started: true,
-                                                            startTime:
-                                                                getCurrentTimestamp,
-                                                            limitTime: functions.getLimitTime(
-                                                                mapPageRegistrationsRecord!
-                                                                    .category!,
-                                                                columnEventsRecord
-                                                                    .distance!,
-                                                                getCurrentTimestamp),
+                                if (mapPageRegistrationsRecord!.status! < 2)
+                                  Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        20, 20, 20, 20),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if (mapPageRegistrationsRecord!
+                                                .status ==
+                                            1)
+                                          FlutterFlowIconButton(
+                                            borderColor: Colors.transparent,
+                                            borderRadius: 30,
+                                            borderWidth: 1,
+                                            buttonSize: 50,
+                                            icon: Icon(
+                                              Icons.timer_off,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .alternate,
+                                              size: 30,
+                                            ),
+                                            onPressed: () async {
+                                              var confirmDialogResponse =
+                                                  await showDialog<bool>(
+                                                        context: context,
+                                                        builder:
+                                                            (alertDialogContext) {
+                                                          return AlertDialog(
+                                                            title: Text(
+                                                                'Abandonner'),
+                                                            content: Text(
+                                                                'Êtes-vous sûr que vous souhaitez abandonner l\'épreuve ?'),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                        alertDialogContext,
+                                                                        false),
+                                                                child: Text(
+                                                                    'Annuler'),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                        alertDialogContext,
+                                                                        true),
+                                                                child: Text(
+                                                                    'Confirmer'),
+                                                              ),
+                                                            ],
                                                           );
-                                                          await mapPageRegistrationsRecord!
-                                                              .reference
-                                                              .update(
-                                                                  registrationsUpdateData);
                                                         },
-                                                  text: 'Démarrer l\'épreuve',
-                                                  options: FFButtonOptions(
-                                                    height: 40,
-                                                    color: Color(0xFF699530),
-                                                    textStyle: FlutterFlowTheme
-                                                            .of(context)
+                                                      ) ??
+                                                      false;
+                                              if (confirmDialogResponse) {
+                                                final registrationsUpdateData =
+                                                    createRegistrationsRecordData(
+                                                  status: 3,
+                                                );
+                                                await mapPageRegistrationsRecord!
+                                                    .reference
+                                                    .update(
+                                                        registrationsUpdateData);
+                                              }
+                                            },
+                                          ),
+                                        if (mapPageRegistrationsRecord!
+                                                .status ==
+                                            0)
+                                          Align(
+                                            alignment:
+                                                AlignmentDirectional(0, -1),
+                                            child: FFButtonWidget(
+                                              onPressed: !functions.validateStep(
+                                                      currentUserLocationValue!,
+                                                      columnEventsRecord
+                                                          .start.location!)
+                                                  ? null
+                                                  : () async {
+                                                      var confirmDialogResponse =
+                                                          await showDialog<
+                                                                  bool>(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (alertDialogContext) {
+                                                                  return AlertDialog(
+                                                                    title: Text(
+                                                                        'Confirmation'),
+                                                                    content: Text(
+                                                                        'Vous êtes sur le point de démarrer le suivi de l\'épreuve. Votre temps sera calculé à partir de maintenant.'),
+                                                                    actions: [
+                                                                      TextButton(
+                                                                        onPressed: () => Navigator.pop(
+                                                                            alertDialogContext,
+                                                                            false),
+                                                                        child: Text(
+                                                                            'Annuler'),
+                                                                      ),
+                                                                      TextButton(
+                                                                        onPressed: () => Navigator.pop(
+                                                                            alertDialogContext,
+                                                                            true),
+                                                                        child: Text(
+                                                                            'Confirmer'),
+                                                                      ),
+                                                                    ],
+                                                                  );
+                                                                },
+                                                              ) ??
+                                                              false;
+                                                      if (confirmDialogResponse) {
+                                                        final registrationsUpdateData =
+                                                            createRegistrationsRecordData(
+                                                          startTime:
+                                                              getCurrentTimestamp,
+                                                          limitTime: functions.getLimitTime(
+                                                              columnEventsRecord,
+                                                              mapPageRegistrationsRecord!,
+                                                              getCurrentTimestamp),
+                                                          status: 1,
+                                                          currentCheckpoint: -1,
+                                                        );
+                                                        await mapPageRegistrationsRecord!
+                                                            .reference
+                                                            .update(
+                                                                registrationsUpdateData);
+                                                      }
+                                                    },
+                                              text: 'Démarrer l\'épreuve',
+                                              options: FFButtonOptions(
+                                                height: 40,
+                                                color: Color(0xFF699530),
+                                                textStyle:
+                                                    FlutterFlowTheme.of(context)
                                                         .subtitle2
                                                         .override(
                                                           fontFamily: 'Poppins',
                                                           color: Colors.white,
                                                         ),
-                                                    borderSide: BorderSide(
-                                                      color: Colors.transparent,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
+                                                borderSide: BorderSide(
+                                                  color: Colors.transparent,
+                                                  width: 1,
                                                 ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
-                                            if (mapPageRegistrationsRecord!
-                                                    .started ??
-                                                true)
-                                              Align(
-                                                alignment:
-                                                    AlignmentDirectional(0, -1),
-                                                child: FFButtonWidget(
-                                                  onPressed: !functions
-                                                          .validateNextCheckpoint(
-                                                              currentUserLocationValue!,
-                                                              mapPageRegistrationsRecord!
-                                                                  .currentCheckpoint!,
-                                                              columnEventsRecord
-                                                                  .checkpoints!
-                                                                  .toList())
-                                                      ? null
-                                                      : () async {
+                                            ),
+                                          ),
+                                        if (functions.allCheckpointsValidated(
+                                                columnEventsRecord.checkpoints!
+                                                    .toList(),
+                                                mapPageRegistrationsRecord!
+                                                    .currentCheckpoint!) &&
+                                            (mapPageRegistrationsRecord!
+                                                    .status ==
+                                                1))
+                                          Align(
+                                            alignment:
+                                                AlignmentDirectional(0, -1),
+                                            child: FFButtonWidget(
+                                              onPressed: !functions
+                                                      .validateNextCheckpoint(
+                                                          mapPageRegistrationsRecord!,
+                                                          columnEventsRecord,
+                                                          currentUserLocationValue!)
+                                                  ? null
+                                                  : () async {
+                                                      final registrationsUpdateData =
+                                                          createRegistrationsRecordData(
+                                                        endTime:
+                                                            getCurrentTimestamp,
+                                                        status: 2,
+                                                      );
+                                                      await mapPageRegistrationsRecord!
+                                                          .reference
+                                                          .update(
+                                                              registrationsUpdateData);
+                                                      await fireWorksController
+                                                          .forward();
+                                                      fireWorksController
+                                                          .reset();
+                                                    },
+                                              text: 'Terminer l\'épreuve',
+                                              options: FFButtonOptions(
+                                                height: 40,
+                                                color: Color(0xFF699530),
+                                                textStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .subtitle2
+                                                        .override(
+                                                          fontFamily: 'Poppins',
+                                                          color: Colors.white,
+                                                        ),
+                                                borderSide: BorderSide(
+                                                  color: Colors.transparent,
+                                                  width: 1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                        if ((mapPageRegistrationsRecord!
+                                                    .status ==
+                                                1) &&
+                                            !functions.allCheckpointsValidated(
+                                                columnEventsRecord.checkpoints!
+                                                    .toList(),
+                                                mapPageRegistrationsRecord!
+                                                    .currentCheckpoint!))
+                                          Align(
+                                            alignment:
+                                                AlignmentDirectional(0, -1),
+                                            child: FFButtonWidget(
+                                              onPressed: !functions
+                                                      .validateNextCheckpoint(
+                                                          mapPageRegistrationsRecord!,
+                                                          columnEventsRecord,
+                                                          currentUserLocationValue!)
+                                                  ? null
+                                                  : () async {
+                                                      final registrationsUpdateData =
+                                                          {
+                                                        'current_checkpoint':
+                                                            FieldValue
+                                                                .increment(1),
+                                                      };
+                                                      await mapPageRegistrationsRecord!
+                                                          .reference
+                                                          .update(
+                                                              registrationsUpdateData);
+                                                    },
+                                              text: 'Valider le checkpoint',
+                                              options: FFButtonOptions(
+                                                height: 40,
+                                                color: Color(0xFF699530),
+                                                textStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .subtitle2
+                                                        .override(
+                                                          fontFamily: 'Poppins',
+                                                          color: Colors.white,
+                                                        ),
+                                                borderSide: BorderSide(
+                                                  color: Colors.transparent,
+                                                  width: 1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                        if (mapPageRegistrationsRecord!
+                                                .status ==
+                                            1)
+                                          FlutterFlowIconButton(
+                                            borderColor: Colors.transparent,
+                                            borderRadius: 30,
+                                            borderWidth: 1,
+                                            buttonSize: 40,
+                                            fillColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primaryColor,
+                                            icon: Icon(
+                                              Icons
+                                                  .settings_backup_restore_rounded,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryBackground,
+                                              size: 20,
+                                            ),
+                                            onPressed:
+                                                mapPageRegistrationsRecord!
+                                                            .currentCheckpoint ==
+                                                        -1
+                                                    ? null
+                                                    : () async {
+                                                        var confirmDialogResponse =
+                                                            await showDialog<
+                                                                    bool>(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (alertDialogContext) {
+                                                                    return AlertDialog(
+                                                                      title: Text(
+                                                                          'Annuler le dernier checkpoint'),
+                                                                      content: Text(
+                                                                          'Êtes-vous sûrs de vouloir annuler le dernier checkpoint ?'),
+                                                                      actions: [
+                                                                        TextButton(
+                                                                          onPressed: () => Navigator.pop(
+                                                                              alertDialogContext,
+                                                                              false),
+                                                                          child:
+                                                                              Text('Annuler'),
+                                                                        ),
+                                                                        TextButton(
+                                                                          onPressed: () => Navigator.pop(
+                                                                              alertDialogContext,
+                                                                              true),
+                                                                          child:
+                                                                              Text('Confirmer'),
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  },
+                                                                ) ??
+                                                                false;
+                                                        if (confirmDialogResponse) {
                                                           final registrationsUpdateData =
                                                               {
                                                             'current_checkpoint':
                                                                 FieldValue
                                                                     .increment(
-                                                                        1),
+                                                                        -(1)),
                                                           };
                                                           await mapPageRegistrationsRecord!
                                                               .reference
                                                               .update(
                                                                   registrationsUpdateData);
-                                                        },
-                                                  text: 'Valider le checkpoint',
-                                                  options: FFButtonOptions(
-                                                    height: 40,
-                                                    color: Color(0xFF699530),
-                                                    textStyle: FlutterFlowTheme
-                                                            .of(context)
-                                                        .subtitle2
-                                                        .override(
-                                                          fontFamily: 'Poppins',
-                                                          color: Colors.white,
-                                                        ),
-                                                    borderSide: BorderSide(
-                                                      color: Colors.transparent,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                ),
-                                              ),
-                                            FlutterFlowIconButton(
-                                              borderColor: Colors.transparent,
-                                              borderRadius: 30,
-                                              borderWidth: 1,
-                                              buttonSize: 40,
-                                              fillColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryColor,
-                                              icon: Icon(
-                                                Icons
-                                                    .settings_backup_restore_rounded,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryBackground,
-                                                size: 20,
-                                              ),
-                                              onPressed:
-                                                  mapPageRegistrationsRecord!
-                                                              .currentCheckpoint ==
-                                                          -1
-                                                      ? null
-                                                      : () async {
-                                                          var confirmDialogResponse =
-                                                              await showDialog<
-                                                                      bool>(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (alertDialogContext) {
-                                                                      return AlertDialog(
-                                                                        title: Text(
-                                                                            'Annuler le dernier checkpoint'),
-                                                                        content:
-                                                                            Text('Êtes-vous sûrs de vouloir annuler le dernier checkpoint ?'),
-                                                                        actions: [
-                                                                          TextButton(
-                                                                            onPressed: () =>
-                                                                                Navigator.pop(alertDialogContext, false),
-                                                                            child:
-                                                                                Text('Annuler'),
-                                                                          ),
-                                                                          TextButton(
-                                                                            onPressed: () =>
-                                                                                Navigator.pop(alertDialogContext, true),
-                                                                            child:
-                                                                                Text('Confirmer'),
-                                                                          ),
-                                                                        ],
-                                                                      );
-                                                                    },
-                                                                  ) ??
-                                                                  false;
-                                                          if (confirmDialogResponse) {
-                                                            final registrationsUpdateData =
-                                                                {
-                                                              'current_checkpoint':
-                                                                  FieldValue
-                                                                      .increment(
-                                                                          -(1)),
-                                                            };
-                                                            await mapPageRegistrationsRecord!
-                                                                .reference
-                                                                .update(
-                                                                    registrationsUpdateData);
-                                                          }
-                                                        },
-                                            ),
-                                          ],
-                                        ),
+                                                        }
+                                                      },
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                Align(
+                                  alignment: AlignmentDirectional(0, 1),
+                                  child: Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        10, 0, 10, 40),
+                                    child: Card(
+                                      clipBehavior: Clip.antiAliasWithSaveLayer,
+                                      color: Color(0xFFF1F4F8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
-                                      Card(
-                                        clipBehavior:
-                                            Clip.antiAliasWithSaveLayer,
-                                        color: Color(0xFFF1F4F8),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0, 10, 0, 10),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Text(
-                                                'Prochain Checkpoint',
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyText1
-                                                        .override(
-                                                          fontFamily: 'Poppins',
-                                                          fontSize: 16,
-                                                        ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(0, 5, 0, 0),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceEvenly,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.location_city,
-                                                          color: Colors.black,
-                                                          size: 24,
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(5,
-                                                                      0, 0, 0),
-                                                          child: Text(
-                                                            functions
-                                                                .getNextCheckpoint(
-                                                                    mapPageRegistrationsRecord!
-                                                                        .currentCheckpoint!,
-                                                                    columnEventsRecord
-                                                                        .checkpoints!
-                                                                        .toList())
-                                                                .city!,
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyText1,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.location_on,
-                                                          color: Colors.black,
-                                                          size: 24,
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(5,
-                                                                      0, 0, 0),
-                                                          child: Text(
-                                                            functions
-                                                                .getDistanceBetweenCheckpoints(
-                                                                    currentUserLocationValue!,
-                                                                    functions
-                                                                        .getNextCheckpoint(
-                                                                            mapPageRegistrationsRecord!.currentCheckpoint!,
-                                                                            columnEventsRecord.checkpoints!.toList())
-                                                                        .location!)
-                                                                .toString(),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyText1,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          'km',
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyText1,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Divider(
-                                                thickness: 1,
-                                              ),
-                                              Text(
-                                                'Arrivée',
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyText1
-                                                        .override(
-                                                          fontFamily: 'Poppins',
-                                                          fontSize: 16,
-                                                        ),
-                                              ),
-                                              Row(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (mapPageRegistrationsRecord!
+                                                  .status ==
+                                              1)
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(5, 5, 5, 5),
+                                              child: Row(
                                                 mainAxisSize: MainAxisSize.max,
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
-                                                        .spaceEvenly,
+                                                        .spaceAround,
                                                 children: [
-                                                  if (mapPageRegistrationsRecord!
-                                                          .started ??
-                                                      true)
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.timer,
-                                                          color: Colors.black,
-                                                          size: 24,
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(5,
-                                                                      0, 0, 0),
-                                                          child: Text(
-                                                            functions.getRemainingTime(
-                                                                mapPageRegistrationsRecord!
-                                                                    .limitTime!),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyText1,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  Row(
+                                                  Column(
                                                     mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
+                                                        MainAxisSize.max,
                                                     children: [
-                                                      Icon(
-                                                        Icons.location_on,
-                                                        color: Colors.black,
-                                                        size: 24,
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    5, 0, 0, 0),
-                                                        child: Text(
-                                                          functions
-                                                              .getDistanceBetweenCheckpoints(
-                                                                  currentUserLocationValue!,
-                                                                  columnEventsRecord
-                                                                      .finish
-                                                                      .location!)
-                                                              .toString(),
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyText1,
-                                                        ),
-                                                      ),
                                                       Text(
-                                                        'km',
+                                                        'Prochain Checkpoint',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .bodyText1,
+                                                                .bodyText1
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Poppins',
+                                                                  fontSize: 16,
+                                                                ),
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.location_city,
+                                                            color: Colors.black,
+                                                            size: 24,
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        5,
+                                                                        0,
+                                                                        0,
+                                                                        0),
+                                                            child: Text(
+                                                              functions
+                                                                  .getNextCheckpoint(
+                                                                      mapPageRegistrationsRecord!,
+                                                                      columnEventsRecord)
+                                                                  .city!,
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyText1,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      if (columnEventsRecord
+                                                              .type ==
+                                                          'FF')
+                                                        Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.location_on,
+                                                              color:
+                                                                  Colors.black,
+                                                              size: 24,
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          5,
+                                                                          0,
+                                                                          0,
+                                                                          0),
+                                                              child: Text(
+                                                                functions
+                                                                    .getDistanceBetweenCheckpoints(
+                                                                        currentUserLocationValue!,
+                                                                        functions
+                                                                            .getNextCheckpoint(mapPageRegistrationsRecord!,
+                                                                                columnEventsRecord)
+                                                                            .location!)
+                                                                    .toString(),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyText1,
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              'km',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyText1,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Text(
+                                                        'Arrivée',
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyText1
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Poppins',
+                                                                  fontSize: 16,
+                                                                ),
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.timer,
+                                                            color: Colors.black,
+                                                            size: 24,
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        5,
+                                                                        0,
+                                                                        0,
+                                                                        0),
+                                                            child: Text(
+                                                              functions.getRemainingTime(
+                                                                  mapPageRegistrationsRecord!
+                                                                      .limitTime!),
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyText1,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      if (columnEventsRecord
+                                                              .type ==
+                                                          'FF')
+                                                        Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.location_on,
+                                                              color:
+                                                                  Colors.black,
+                                                              size: 24,
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          5,
+                                                                          0,
+                                                                          0,
+                                                                          0),
+                                                              child: Text(
+                                                                functions
+                                                                    .getDistanceBetweenCheckpoints(
+                                                                        currentUserLocationValue!,
+                                                                        columnEventsRecord
+                                                                            .finish
+                                                                            .location!)
+                                                                    .toString(),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyText1,
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              'km',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyText1,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          if (mapPageRegistrationsRecord!
+                                                  .status ==
+                                              2)
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(5, 5, 5, 5),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: [
+                                                  Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Text(
+                                                        'Épreuve terminée !',
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyText1
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Poppins',
+                                                                  fontSize: 16,
+                                                                ),
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.timer,
+                                                            color: Colors.black,
+                                                            size: 24,
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        5,
+                                                                        0,
+                                                                        0,
+                                                                        0),
+                                                            child: Text(
+                                                              functions
+                                                                  .getTotalTime(
+                                                                      mapPageRegistrationsRecord!),
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyText1,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.speed,
+                                                            color: Colors.black,
+                                                            size: 24,
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        5,
+                                                                        0,
+                                                                        0,
+                                                                        0),
+                                                            child: Text(
+                                                              '${functions.getAverageSpeed(mapPageRegistrationsRecord!, columnEventsRecord).toString()} km/h',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyText1,
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ],
                                                   ),
                                                 ],
                                               ),
-                                            ],
-                                          ),
-                                        ),
+                                            ),
+                                          if (mapPageRegistrationsRecord!
+                                                  .status ==
+                                              3)
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(5, 5, 5, 5),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: [
+                                                  Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Text(
+                                                        'Épreuve abandonnée',
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyText1
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'Poppins',
+                                                                  fontSize: 16,
+                                                                ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
+                                  ),
+                                ),
+                                Align(
+                                  alignment: AlignmentDirectional(0, 0),
+                                  child: Lottie.network(
+                                    'https://assets10.lottiefiles.com/packages/lf20_jEMHbp.json',
+                                    width: MediaQuery.of(context).size.width,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.7,
+                                    fit: BoxFit.cover,
+                                    controller: fireWorksController,
+                                    onLoaded: (composition) =>
+                                        fireWorksController.duration =
+                                            composition.duration,
                                   ),
                                 ),
                               ],

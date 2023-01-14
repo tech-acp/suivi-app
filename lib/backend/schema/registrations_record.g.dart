@@ -40,13 +40,6 @@ class _$RegistrationsRecordSerializer
         ..add(serializers.serialize(value,
             specifiedType: const FullType(String)));
     }
-    value = object.status;
-    if (value != null) {
-      result
-        ..add('status')
-        ..add(serializers.serialize(value,
-            specifiedType: const FullType(String)));
-    }
     value = object.currentCheckpoint;
     if (value != null) {
       result
@@ -59,13 +52,6 @@ class _$RegistrationsRecordSerializer
         ..add('category')
         ..add(serializers.serialize(value,
             specifiedType: const FullType(String)));
-    }
-    value = object.started;
-    if (value != null) {
-      result
-        ..add('started')
-        ..add(
-            serializers.serialize(value, specifiedType: const FullType(bool)));
     }
     value = object.startTime;
     if (value != null) {
@@ -80,6 +66,26 @@ class _$RegistrationsRecordSerializer
         ..add('limit_time')
         ..add(serializers.serialize(value,
             specifiedType: const FullType(DateTime)));
+    }
+    value = object.endTime;
+    if (value != null) {
+      result
+        ..add('end_time')
+        ..add(serializers.serialize(value,
+            specifiedType: const FullType(DateTime)));
+    }
+    value = object.type;
+    if (value != null) {
+      result
+        ..add('type')
+        ..add(serializers.serialize(value,
+            specifiedType: const FullType(String)));
+    }
+    value = object.status;
+    if (value != null) {
+      result
+        ..add('status')
+        ..add(serializers.serialize(value, specifiedType: const FullType(int)));
     }
     value = object.ffRef;
     if (value != null) {
@@ -114,10 +120,6 @@ class _$RegistrationsRecordSerializer
           result.id = serializers.deserialize(value,
               specifiedType: const FullType(String)) as String?;
           break;
-        case 'status':
-          result.status = serializers.deserialize(value,
-              specifiedType: const FullType(String)) as String?;
-          break;
         case 'current_checkpoint':
           result.currentCheckpoint = serializers.deserialize(value,
               specifiedType: const FullType(int)) as int?;
@@ -126,10 +128,6 @@ class _$RegistrationsRecordSerializer
           result.category = serializers.deserialize(value,
               specifiedType: const FullType(String)) as String?;
           break;
-        case 'started':
-          result.started = serializers.deserialize(value,
-              specifiedType: const FullType(bool)) as bool?;
-          break;
         case 'start_time':
           result.startTime = serializers.deserialize(value,
               specifiedType: const FullType(DateTime)) as DateTime?;
@@ -137,6 +135,18 @@ class _$RegistrationsRecordSerializer
         case 'limit_time':
           result.limitTime = serializers.deserialize(value,
               specifiedType: const FullType(DateTime)) as DateTime?;
+          break;
+        case 'end_time':
+          result.endTime = serializers.deserialize(value,
+              specifiedType: const FullType(DateTime)) as DateTime?;
+          break;
+        case 'type':
+          result.type = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String?;
+          break;
+        case 'status':
+          result.status = serializers.deserialize(value,
+              specifiedType: const FullType(int)) as int?;
           break;
         case 'Document__Reference__Field':
           result.ffRef = serializers.deserialize(value,
@@ -157,17 +167,19 @@ class _$RegistrationsRecord extends RegistrationsRecord {
   @override
   final String? id;
   @override
-  final String? status;
-  @override
   final int? currentCheckpoint;
   @override
   final String? category;
   @override
-  final bool? started;
-  @override
   final DateTime? startTime;
   @override
   final DateTime? limitTime;
+  @override
+  final DateTime? endTime;
+  @override
+  final String? type;
+  @override
+  final int? status;
   @override
   final DocumentReference<Object?>? ffRef;
 
@@ -178,12 +190,13 @@ class _$RegistrationsRecord extends RegistrationsRecord {
   _$RegistrationsRecord._(
       {this.event,
       this.id,
-      this.status,
       this.currentCheckpoint,
       this.category,
-      this.started,
       this.startTime,
       this.limitTime,
+      this.endTime,
+      this.type,
+      this.status,
       this.ffRef})
       : super._();
 
@@ -202,12 +215,13 @@ class _$RegistrationsRecord extends RegistrationsRecord {
     return other is RegistrationsRecord &&
         event == other.event &&
         id == other.id &&
-        status == other.status &&
         currentCheckpoint == other.currentCheckpoint &&
         category == other.category &&
-        started == other.started &&
         startTime == other.startTime &&
         limitTime == other.limitTime &&
+        endTime == other.endTime &&
+        type == other.type &&
+        status == other.status &&
         ffRef == other.ffRef;
   }
 
@@ -219,13 +233,15 @@ class _$RegistrationsRecord extends RegistrationsRecord {
                 $jc(
                     $jc(
                         $jc(
-                            $jc($jc($jc(0, event.hashCode), id.hashCode),
-                                status.hashCode),
-                            currentCheckpoint.hashCode),
-                        category.hashCode),
-                    started.hashCode),
-                startTime.hashCode),
-            limitTime.hashCode),
+                            $jc(
+                                $jc($jc($jc(0, event.hashCode), id.hashCode),
+                                    currentCheckpoint.hashCode),
+                                category.hashCode),
+                            startTime.hashCode),
+                        limitTime.hashCode),
+                    endTime.hashCode),
+                type.hashCode),
+            status.hashCode),
         ffRef.hashCode));
   }
 
@@ -234,12 +250,13 @@ class _$RegistrationsRecord extends RegistrationsRecord {
     return (newBuiltValueToStringHelper(r'RegistrationsRecord')
           ..add('event', event)
           ..add('id', id)
-          ..add('status', status)
           ..add('currentCheckpoint', currentCheckpoint)
           ..add('category', category)
-          ..add('started', started)
           ..add('startTime', startTime)
           ..add('limitTime', limitTime)
+          ..add('endTime', endTime)
+          ..add('type', type)
+          ..add('status', status)
           ..add('ffRef', ffRef))
         .toString();
   }
@@ -257,10 +274,6 @@ class RegistrationsRecordBuilder
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
 
-  String? _status;
-  String? get status => _$this._status;
-  set status(String? status) => _$this._status = status;
-
   int? _currentCheckpoint;
   int? get currentCheckpoint => _$this._currentCheckpoint;
   set currentCheckpoint(int? currentCheckpoint) =>
@@ -270,10 +283,6 @@ class RegistrationsRecordBuilder
   String? get category => _$this._category;
   set category(String? category) => _$this._category = category;
 
-  bool? _started;
-  bool? get started => _$this._started;
-  set started(bool? started) => _$this._started = started;
-
   DateTime? _startTime;
   DateTime? get startTime => _$this._startTime;
   set startTime(DateTime? startTime) => _$this._startTime = startTime;
@@ -281,6 +290,18 @@ class RegistrationsRecordBuilder
   DateTime? _limitTime;
   DateTime? get limitTime => _$this._limitTime;
   set limitTime(DateTime? limitTime) => _$this._limitTime = limitTime;
+
+  DateTime? _endTime;
+  DateTime? get endTime => _$this._endTime;
+  set endTime(DateTime? endTime) => _$this._endTime = endTime;
+
+  String? _type;
+  String? get type => _$this._type;
+  set type(String? type) => _$this._type = type;
+
+  int? _status;
+  int? get status => _$this._status;
+  set status(int? status) => _$this._status = status;
 
   DocumentReference<Object?>? _ffRef;
   DocumentReference<Object?>? get ffRef => _$this._ffRef;
@@ -295,12 +316,13 @@ class RegistrationsRecordBuilder
     if ($v != null) {
       _event = $v.event;
       _id = $v.id;
-      _status = $v.status;
       _currentCheckpoint = $v.currentCheckpoint;
       _category = $v.category;
-      _started = $v.started;
       _startTime = $v.startTime;
       _limitTime = $v.limitTime;
+      _endTime = $v.endTime;
+      _type = $v.type;
+      _status = $v.status;
       _ffRef = $v.ffRef;
       _$v = null;
     }
@@ -326,12 +348,13 @@ class RegistrationsRecordBuilder
         new _$RegistrationsRecord._(
             event: event,
             id: id,
-            status: status,
             currentCheckpoint: currentCheckpoint,
             category: category,
-            started: started,
             startTime: startTime,
             limitTime: limitTime,
+            endTime: endTime,
+            type: type,
+            status: status,
             ffRef: ffRef);
     replace(_$result);
     return _$result;

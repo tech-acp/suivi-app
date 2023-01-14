@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
 import '../flutter_flow_theme.dart';
 import '../../backend/backend.dart';
+import '../../backend/supabase/supabase.dart';
 
 import '../../index.dart';
 import '../../main.dart';
@@ -53,24 +54,24 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               ),
             ),
             FFRoute(
-              name: 'EventPage',
-              path: 'eventPage',
-              builder: (context, params) => EventPageWidget(
-                registrationReference: params.getParam('registrationReference',
-                    ParamType.DocumentReference, false, ['registrations']),
-              ),
-            ),
-            FFRoute(
-              name: 'AddEventPage',
-              path: 'addEventPage',
-              builder: (context, params) => AddEventPageWidget(),
-            ),
-            FFRoute(
               name: 'MapPage',
               path: 'mapPage',
               builder: (context, params) => MapPageWidget(
                 id: params.getParam('id', ParamType.String),
               ),
+            ),
+            FFRoute(
+              name: 'AdminEventPage',
+              path: 'adminEventPage',
+              builder: (context, params) => AdminEventPageWidget(
+                brevet: params.getParam<BrevetsRow>(
+                    'brevet', ParamType.SupabaseRow),
+              ),
+            ),
+            FFRoute(
+              name: 'AdminPage',
+              path: 'addEventPage',
+              builder: (context, params) => AdminPageWidget(),
             )
           ].map((r) => r.toRoute(appStateNotifier)).toList(),
         ).toRoute(appStateNotifier),
