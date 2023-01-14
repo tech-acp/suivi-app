@@ -200,6 +200,7 @@ class _MapPageWidgetState extends State<MapPageWidget>
                                                 final registrationsUpdateData =
                                                     createRegistrationsRecordData(
                                                   status: 3,
+                                                  endTime: getCurrentTimestamp,
                                                 );
                                                 await mapPageRegistrationsRecord!
                                                     .reference
@@ -501,7 +502,7 @@ class _MapPageWidgetState extends State<MapPageWidget>
                                                         MainAxisSize.max,
                                                     children: [
                                                       Text(
-                                                        'Prochain Checkpoint',
+                                                        'Prochain Checkpoint :',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -800,7 +801,7 @@ class _MapPageWidgetState extends State<MapPageWidget>
                                                         MainAxisSize.max,
                                                     children: [
                                                       Text(
-                                                        'Épreuve abandonnée',
+                                                        'Épreuve abandonnée.',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
